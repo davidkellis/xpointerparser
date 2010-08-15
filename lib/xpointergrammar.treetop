@@ -19,11 +19,20 @@ grammar XPointer
   # but we also want to support the XPointer element() Scheme (defined at http://www.w3.org/TR/xptr-element/):
   #   3. element() Scheme
   #
-  # Later, if I need it, I'll add support for the XPointer xmlns() Scheme (defined at http://www.w3.org/TR/xptr-xmlns/).
+  # Later, if I need it, I'll add support for the XPointer xmlns() Scheme (defined at http://www.w3.org/TR/xptr-xmlns/)
+  # and the XPointer xpointer() Scheme (defined at http://www.w3.org/TR/xptr-xpointer/).
   rule pointerpart
-    'element' '(' elementschemedata ')'
+    'element' '(' elementschemedata ')' {
+      def populate(pointer)
+        pointer.pointer_parts << PointerPart.new(SchemeName.new('element'), elementschemedata.scheme_data_hash)
+      end
+    }
     /
-    schemename '(' schemedata ')'
+    schemename '(' schemedata ')' {
+      def populate(pointer)
+        pointer.pointer_parts << PointerPart.new(SchemeName.new(schemename.prefix, schemename.suffix), schemedata.scheme_data_hash)
+      end
+    }
   end
 
   rule elementschemedata
@@ -61,12 +70,30 @@ grammar XPointer
   
   # http://www.w3.org/TR/REC-xml-names/#NT-QName
   rule qname
-    prefixedname / unprefixedname
+    prefixedname
+    /
+    unprefixedname {
+      def prefix
+        ""
+      end
+      
+      def suffix
+        unprefixedname.text_value
+      end
+    }
   end
 
   # http://www.w3.org/TR/REC-xml-names/#NT-PrefixedName
   rule prefixedname
-    prefix ':' localpart
+    pre:prefix ':' localpart {
+      def prefix
+        pre.text_value
+      end
+      
+      def suffix
+        localpart.text_value
+      end
+    }
   end
   
   # http://www.w3.org/TR/REC-xml-names/#NT-UnprefixedName
