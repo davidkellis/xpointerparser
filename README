@@ -1,0 +1,15 @@
+This project is a subproject of my xbrlparser project.
+
+I needed to be able to parse XPointer strings. See 
+http://www.xbrl.org/Specification/XBRL-RECOMMENDATION-2003-12-31+Corrected-Errata-2008-07-02.htm#_3.5.4
+for an explanation.
+
+This project implements the XPointer productions as defined at:
+http://www.w3.org/TR/xptr-framework/
+http://www.w3.org/TR/xptr-element/
+
+Some of the productions were taken from:
+http://www.w3.org/TR/REC-xml/
+http://www.w3.org/TR/REC-xml-names/
+
+The parser is generated from a Treetop (http://treetop.rubyforge.org/) grammar.

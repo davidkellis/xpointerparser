@@ -1,0 +1,120 @@
+# grammar productions taken directly from Section 3.1 of http://www.w3.org/TR/xptr-framework/
+grammar XPointer
+  rule pointer
+    schemebased / shorthand
+  end
+  
+  rule shorthand
+    ncname
+  end
+  
+  rule schemebased
+    pointerpart (s? pointerpart)*
+  end
+  
+  # This rule is modified because we want to support the two default types of
+  # XPointer (defined at http://www.w3.org/TR/xptr-framework/):
+  #   1. Shorthand Pointer
+  #   2. Scheme-Based Pointer
+  # but we also want to support the XPointer element() Scheme (defined at http://www.w3.org/TR/xptr-element/):
+  #   3. element() Scheme
+  #
+  # Later, if I need it, I'll add support for the XPointer xmlns() Scheme (defined at http://www.w3.org/TR/xptr-xmlns/).
+  rule pointerpart
+    'element' '(' elementschemedata ')'
+    /
+    schemename '(' schemedata ')'
+  end
+
+  rule elementschemedata
+    (ncname childsequence?) / childsequence
+  end
+  
+  rule childsequence
+    ('/' [1-9] [0-9]*)+
+  end
+  
+  rule schemename
+    qname
+  end
+
+  rule schemedata
+    escapeddata*
+  end
+
+  rule escapeddata
+    normalchar / '^(' / '^)' / '^^' / '(' schemedata ')'
+  end
+
+  rule normalchar
+    ![()^] unicodechar
+  end
+
+  rule unicodechar
+    [\u0000-\u10FFFF]
+  end
+  
+  # production taken from: http://www.w3.org/TR/REC-xml/#NT-S
+  rule s
+    ([\u0020] / [\u0009] / [\u000D] / [\u000A])+
+  end
+  
+  # http://www.w3.org/TR/REC-xml-names/#NT-QName
+  rule qname
+    prefixedname / unprefixedname
+  end
+
+  # http://www.w3.org/TR/REC-xml-names/#NT-PrefixedName
+  rule prefixedname
+    prefix ':' localpart
+  end
+  
+  # http://www.w3.org/TR/REC-xml-names/#NT-UnprefixedName
+  rule unprefixedname
+    localpart
+  end
+  
+  # http://www.w3.org/TR/REC-xml-names/#NT-Prefix
+  rule prefix
+    ncname
+  end
+  
+  # http://www.w3.org/TR/REC-xml-names/#NT-LocalPart
+  rule localpart
+    ncname
+  end
+  
+  # production taken from: http://www.w3.org/TR/REC-xml-names/#NT-NCName
+  # The production from http://www.w3.org/TR/REC-xml-names/#NT-NCName is
+  #   "Name - (Char* ':' Char*)	/* An XML Name, minus the ":" */"
+  # but that production doesn't match an XML Name, minus the ":" like it says it does, so I've modified it slightly
+  # so that the rule matches an XML Name without any ":" anywhere within the Name.
+  rule ncname
+    name_without_colon
+  end
+  
+  # This is my invented rule -- DKE.
+  rule name_without_colon
+    !':' namestartchar (!':' namechar)*
+  end
+  
+  # http://www.w3.org/TR/REC-xml/#NT-Name
+  rule name
+    namestartchar namechar*
+  end
+  
+  # http://www.w3.org/TR/REC-xml/#NT-NameStartChar
+  rule namestartchar
+    ":" / [A-Z] / "_" / [a-z] / [\u00C0-\u00D6] / [\u00D8-\u00F6] / [\u00F8-\u02FF] / [\u0370-\u037D] / [\u037F-\u1FFF] / [\u200C-\u200D] / [\u2070-\u218F] / [\u2C00-\u2FEF] / [\u3001-\uD7FF] / [\uF900-\uFDCF] / [\uFDF0-\uFFFD] / [\u10000-\uEFFFF]
+  end
+  
+  # http://www.w3.org/TR/REC-xml/#NT-NameChar
+  rule namechar
+    namestartchar / "-" / "." / [0-9] / [\u00B7] / [\u0300-\u036F] / [\u203F-\u2040]
+  end
+
+  # http://www.w3.org/TR/REC-xml/#NT-Char
+  rule char
+    [\u0009] / [\u000A] / [\u000D] / [\u0020-\uD7FF] / [\uE000-\uFFFD] / [\u10000-\u10FFFF]
+  end
+end
