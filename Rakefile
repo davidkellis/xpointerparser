@@ -1,9 +1,9 @@
 require 'rake/gempackagetask'
 
 spec = Gem::Specification.new do |s|
-  s.name = "leiri"
-  s.summary = "A Legacy Extended IRI parser."
-  s.description= "A Legacy Extended IRI parser implementing the productions documented at http://www.w3.org/TR/leiri/."
+  s.name = "xpointer"
+  s.summary = "An XPointer parser."
+  s.description= "A partial implementation of an XPointer (http://www.w3.org/TR/xptr-framework/) parser."
   s.requirements = [ 'None' ]
   s.version = "0.0.1"
   s.author = "David Ellis"

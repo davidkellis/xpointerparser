@@ -1,7 +1,18 @@
 # grammar productions taken directly from Section 3.1 of http://www.w3.org/TR/xptr-framework/
-grammar XPointer
+grammar XPointerGrammar
   rule pointer
-    schemebased / shorthand
+    schemebased {
+      def populate(pointer)
+        super
+        pointer.reference_type = :scheme
+      end
+    }
+    /
+    shorthand {
+      def populate(pointer)
+        pointer.reference_type = :shorthand
+      end
+    }
   end
   
   rule shorthand
@@ -9,7 +20,15 @@ grammar XPointer
   end
   
   rule schemebased
-    pointerpart (s? pointerpart)*
+    first_pp:pointerpart rest_pp:(s? pointerpart)* {
+      def pointerparts
+        [first_pp] + rest_pp.elements.map {|pair| pair.pointerpart }
+      end
+      
+      def populate(pointer)
+        pointerparts.each {|pp| pp.populate(pointer) }
+      end
+    }
   end
   
   # This rule is modified because we want to support the two default types of
@@ -21,20 +40,24 @@ grammar XPointer
   #
   # Later, if I need it, I'll add support for the XPointer xmlns() Scheme (defined at http://www.w3.org/TR/xptr-xmlns/)
   # and the XPointer xpointer() Scheme (defined at http://www.w3.org/TR/xptr-xpointer/).
+  #
+  # Note: The XPointer framework spec. says "A scheme name consists syntactically of an optional Prefix and a LocalPart" 
+  #       and the element() scheme specification says "The scheme name is 'element'."
+  #       I interpret that to mean that the element() scheme spec. does not allow a namespace prefix in the scheme name.
   rule pointerpart
     'element' '(' elementschemedata ')' {
       def populate(pointer)
-        pointer.pointer_parts << PointerPart.new(SchemeName.new('element'), elementschemedata.scheme_data_hash)
+        pointer.pointer_parts << PointerPart.new(SchemeName.new('element'), elementschemedata.text_value)
       end
     }
     /
     schemename '(' schemedata ')' {
       def populate(pointer)
-        pointer.pointer_parts << PointerPart.new(SchemeName.new(schemename.prefix, schemename.suffix), schemedata.scheme_data_hash)
+        pointer.pointer_parts << PointerPart.new(SchemeName.new(schemename.prefix, schemename.suffix), schemedata.text_value)
       end
     }
   end
-
+  
   rule elementschemedata
     (ncname childsequence?) / childsequence
   end
@@ -74,11 +97,11 @@ grammar XPointer
     /
     unprefixedname {
       def prefix
-        ""
+        nil
       end
       
       def suffix
-        unprefixedname.text_value
+        text_value
       end
     }
   end
