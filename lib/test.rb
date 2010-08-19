@@ -13,8 +13,11 @@ class TestRule < Test::Unit::TestCase
   def test_valid_pointers
     rules = ["ebnf",
              "element(foo/1/3)",
-             "element(/1/1)",
-             "abc"
+             "element(/1/14)",
+             "abc",
+             "f1",
+             "currentAssets",
+             "element(currentAssets)"
             ]
     
     rules.each do |rule|
